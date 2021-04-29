@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Patient {
+  id          String        @id @default(uuid())
+  name        String
+  email       String        @unique
+  Appointment Appointment[]
+  Address     Address?
+  cpf         String        @unique
+  phone       String
+  password    String
+  createdAt   DateTime      @default(now())
+  birthday    DateTime
+  updatedAt   DateTime      @updatedAt
+  Clinic      Clinic?       @relation(fields: [clinicId], references: [id])
+  clinicId    String?
+}
+
+model Address {
+  Patient   Patient @relation(fields: [patientId], references: [id])
+  patientId String  @id
+  road      String
+  cep       String
+  state     String
+  number    Int
+}
+
+model Appointment {
+  Patient   Patient  @relation(fields: [patientId], references: [id])
+  patientId String
+  Doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  doctorId  String
+  Date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Clinic    Clinic?  @relation(fields: [clinicId], references: [id])
+  clinicId  String?
+
+  @@id([patientId, doctorId, Date])
+}
+
+model Doctor {
+  id          String        @id @default(uuid())
+  name        String
+  crm         BigInt        @unique
+  cpf         String        @unique
+  rg          String        @unique
+  phone       String        @unique
+  birthday    DateTime
+  Appointment Appointment[]
+  Clinic      Clinic?       @relation(fields: [clinicId], references: [id])
+  clinicId    String?
+  email       String        @unique
+  password    String
+  active      Boolean       @default(true)
+}
+
+model Adminstration {
+  id       String @id @default(uuid())
+  Clinic   Clinic @relation(fields: [clinicId], references: [id])
+  clinicId String
+  email    String @unique
+  password String
+  name     String
+  cpf      String @unique
+}
+
+model Clinic {
+  id            String          @id @default(uuid())
+  name          String
+  phone         String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  active        Boolean         @default(true)
+  Adminstration Adminstration[]
+  Doctor        Doctor[]
+  Patient       Patient[]
+  Appointment   Appointment[]
+}
